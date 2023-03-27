@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-Author : jasonhuynh <jasonhuynh@localhost>
-Date   : 2023-03-19
-Purpose: Rock the Casbah
+Author : YOUR_NAME
+Date   : TODAY'S DATE
+Purpose: Create synthetic sequences
 """
 
 import argparse
@@ -35,8 +35,9 @@ def get_args():
     parser.add_argument('-t',
                         '--seqtype',
                         help='The sequence type',
-                        metavar='choices',
+                        metavar='str',
                         type=str,
+                        choices=['dna', 'rna'],
                         default='dna')
 
     parser.add_argument('-n',
@@ -45,14 +46,14 @@ def get_args():
                         metavar='int',
                         type=int,
                         default=10)
-    
+
     parser.add_argument('-m',
                         '--minlen',
                         help='The minimum length for any sequence',
                         metavar='int',
                         type=int,
                         default=50)
-    
+
     parser.add_argument('-x',
                         '--maxlen',
                         help='The maximum length for any sequence',
@@ -66,7 +67,7 @@ def get_args():
                         metavar='FILE',
                         type=argparse.FileType('wt'),
                         default='out.fa',
-                        )          
+                        )
 
     parser.add_argument('-p',
                         '--pctgc',
@@ -74,13 +75,10 @@ def get_args():
                         metavar='float',
                         type=float,
                         default=0.5)
-    
+
     args = parser.parse_args()
     if not 0 < args.pctgc < 1:
         parser.error(f'--pctgc "{args.pctgc}" must be between 0 and 1')
-    
-    if not args.seqtype == "dna" | "rna":
-        parser.error(f'--seqtype "{args.seqtype}" must be "dna" or "rna"')
 
     return parser.parse_args()
 
@@ -100,16 +98,16 @@ def create_pool(pctgc, max_len, seq_type):
 def test_create_pool():
     """ Test create_pool """
 
-    state = random.getstate() 
-    random.seed(1)           
+    state = random.getstate()
+    random.seed(1)
     assert create_pool(.5, 10, 'dna') == 'AAACCCGGTT'
     assert create_pool(.6, 11, 'rna') == 'AACCCCGGGUU'
     assert create_pool(.7, 12, 'dna') == 'ACCCCCGGGGGT'
     assert create_pool(.7, 20, 'rna') == 'AAACCCCCCCGGGGGGGUUU'
     assert create_pool(.4, 15, 'dna') == 'AAAACCCGGGTTTTT'
-    random.setstate(state)   
-    
-    
+    random.setstate(state)
+
+
 # --------------------------------------------------
 def main():
     """Make a jazz noise here"""
@@ -117,13 +115,14 @@ def main():
 
     random.seed(args.seed)
     pool = create_pool(args.pctgc, args.maxlen, args.seqtype)
-
+    type = args.seqtype
+  
     for i in range(args.numseqs):
         seq_len = random.randint(args.minlen, args.maxlen)
         seq = ''.join(random.sample(pool, k=seq_len))
         seqid = f'seq-{i+1}'
-        args.outfile.write(f'>{seqid}\n{seq}\n')
-        
+        args.outfile.write(f'>{seqid} {type}\n{seq}\n')
+
     print(f"Done, wrote {args.numseqs} {args.seqtype.upper()} sequences to '{args.outfile.name}'.")
 
 
